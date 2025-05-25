@@ -1,0 +1,26 @@
+services:
+  linghe_sbox:
+    build: .
+    container_name: linghe_sbox
+    restart: always
+    tty: true
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=none
+    volumes:
+      - .:/app
+      - ./logs:/var/log/linghe 
+    ports:
+      - "8000:8000"
+    command: >
+      bash -lc "
+        service cron start &&
+        python3 anchor.py &&
+        ./init_check.sh &&
+        python3 -m http.server 8000 --directory /app & 
+        tail -F /var/log/linghe/strategy.log
+      "
+    logging:            
+      driver: json-file
+      options:
+        max-size: "50m"    
+        max-file: "3"       
